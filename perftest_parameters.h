@@ -105,7 +105,7 @@
 #define MIN_GID_IX    (0)
 #define MAX_GID_IX    (64)
 #define MIN_QP_NUM    (1)
-#define MAX_QP_NUM    (8)
+#define MAX_QP_NUM    (64)
 #define MIN_INLINE    (0)
 #define MAX_INLINE    (400)
 #define MIN_QP_MCAST  (1)

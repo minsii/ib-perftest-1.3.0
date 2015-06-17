@@ -34,12 +34,6 @@
  * $Id$
  */
 
-
-/**
- * OpenMP version
- * This experiment proves that multi-threads issue send requests may improve small message BW
- */
-
 #if HAVE_CONFIG_H
 #  include <config.h>
 #endif /* HAVE_CONFIG_H */
@@ -182,6 +176,9 @@ static void print_report(struct perftest_parameters *user_param) {
 	       tsize*iters*user_param->num_of_qps*cycles_to_units/(tcompleted[(iters*user_param->num_of_qps) - 1] - tposted[0]) / 0x100000);
 }
 
+#undef DEF_WC_SIZE
+#define DEF_WC_SIZE         (300)
+
 /****************************************************************************** 
  *
  ******************************************************************************/
@@ -259,18 +256,16 @@ int run_iter(struct pingpong_context *ctx,
 
 			if (ctx->scnt[index]%user_param->cq_mod == user_param->cq_mod - 1 || ctx->scnt[index] == user_param->iters - 1)
 				wr[index].send_flags |= IBV_SEND_SIGNALED;
-//printf("warm[%d/%d] %d\n", warmindex, index, totscnt);
+
       }
 	}  
-
-	printf("warm end scnt:%d depth:%d nqp:%d\n", totscnt, user_param->tx_depth, user_param->num_of_qps);
 
 	// main loop for posting 
 	while (totscnt < (user_param->iters * user_param->num_of_qps)  || totccnt < (user_param->iters * user_param->num_of_qps) ) {
 
 		// main loop to run over all the qps and post each time n messages 
 		for (index =0 ; index < user_param->num_of_qps ; index++) {
-		    int subiter = 0;
+          
 			while (ctx->scnt[index] < user_param->iters && (ctx->scnt[index] - ctx->ccnt[index]) < user_param->tx_depth) {
 
 				if (ctx->scnt[index] % user_param->cq_mod == 0 && user_param->cq_mod > 1)
@@ -289,12 +284,9 @@ int run_iter(struct pingpong_context *ctx,
 
 				ctx->scnt[index]++;
 				totscnt++;
-				subiter++;
 
 				if (ctx->scnt[index]%user_param->cq_mod == user_param->cq_mod - 1 || ctx->scnt[index] == user_param->iters - 1)
 					wr[index].send_flags |= IBV_SEND_SIGNALED;
-
-				printf("main send[qp:%d/%d] %d\n", index, subiter, totscnt);
 			}
 		}
 
@@ -312,13 +304,11 @@ int run_iter(struct pingpong_context *ctx,
 						ctx->ccnt[(int)wc[i].wr_id] += user_param->cq_mod;
 						totccnt += user_param->cq_mod;
 
-						if (totccnt >= user_param->iters*user_param->num_of_qps - 1){
+						if (totccnt >= user_param->iters*user_param->num_of_qps - 1)
 							tcompleted[user_param->iters*user_param->num_of_qps - 1] = get_cycles();
-						printf("main comp[%d]\n", user_param->iters*user_param->num_of_qps - 1);
-						}else{
+
+						else 
 							tcompleted[totccnt-1] = get_cycles();
-							printf("main comp[%d]\n", totccnt-1);
-						}
 					}
 				}
 			} while (ne > 0);
