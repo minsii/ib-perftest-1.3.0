@@ -2,6 +2,7 @@
  * Copyright (c) 2005 Topspin Communications.  All rights reserved.
  * Copyright (c) 2005 Mellanox Technologies Ltd.  All rights reserved.
  * Copyright (c) 2009 HNR Consulting.  All rights reserved.
+ * Copyright (c) 2013 by Argonne National Laboratory.  All rights reserved.
  *
  * This software is available to you under a choice of one of two
  * licenses.  You may choose to be licensed under the terms of the GNU
@@ -40,6 +41,14 @@
  *
  * This test parallels ibv_post_send in ib context level.
  * Every thread has separate ibv_context/qp/cq, and then issues ibv_post_send in parallel.
+ */
+
+/**
+ * OpenMP version
+ * This experiment suite proves that multi-threading can improve BW for small messages.
+ *
+ * This test parallels ibv_post_send with separate CTX.
+ * Each thread issues ibv_post_send and polls CQ for different CTX in parallel.
  */
 
 #if HAVE_CONFIG_H

@@ -2,6 +2,7 @@
  * Copyright (c) 2005 Topspin Communications.  All rights reserved.
  * Copyright (c) 2005 Mellanox Technologies Ltd.  All rights reserved.
  * Copyright (c) 2009 HNR Consulting.  All rights reserved.
+ * Copyright (c) 2013 by Argonne National Laboratory.  All rights reserved.
  *
  * This software is available to you under a choice of one of two
  * licenses.  You may choose to be licensed under the terms of the GNU
@@ -37,7 +38,11 @@
 
 /**
  * OpenMP version
- * This experiment proves that multi-threads issue send requests may improve small message BW
+ * This experiment suite proves that multi-threading can improve BW for small messages.
+ *
+ * This test parallels ibv_post_send with shared CTX, separate QP, shared CQ.
+ * Each thread issues ibv_post_send in parallel (two threads may access the same QP),
+ * and polls CQ in sequential.
  */
 
 #if HAVE_CONFIG_H
@@ -351,17 +356,12 @@ int run_iter(struct pingpong_context *ctx,
         if (totscnt < (user_param->iters * user_param->num_of_qps)) {
 
             // floating point exception, but if inner loop qps, performance down (lock increased)
-            /*
-    #ifdef _OPENMP_ON
-    #pragma omp parallel for reduction(+: errs) collapse(2) shared(wr, rem_addr, my_addr)
-    #endif
-            for (index = 0; index < user_param->num_of_qps; index++) {
-                for (iter = 0; iter < iter_depth[index]; iter++) {
-                    */
+
             int mix_loop_cnt = 0;
             for (index = 0; index < user_param->num_of_qps; index++) {
                 mix_loop_cnt += iter_depth[index];
-            } debug_printf("%d-1) mix_loop_cnt %d\n", main_iter, mix_loop_cnt);
+            }
+            debug_printf("%d-1) mix_loop_cnt %d\n", main_iter, mix_loop_cnt);
 
 #ifdef _OPENMP_ON
 #pragma omp parallel for reduction(+: errs) shared(wr, rem_addr, my_addr, iter_depth) private(index)
