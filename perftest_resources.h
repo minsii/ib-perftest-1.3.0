@@ -73,7 +73,7 @@
 // Outstanding reads for "read" verb only.
 #define MAX_SEND_SGE        (1)
 #define MAX_RECV_SGE        (1)
-#define DEF_WC_SIZE         (1)
+#define DEF_WC_SIZE         (16)
 #define PL					(1)
 #define ATOMIC_ADD_VALUE    (1)
 #define ATOMIC_SWAP_VALUE   (0)

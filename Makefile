@@ -2,7 +2,7 @@
 #MCAST_TESTS = send_bw send_lat
 #TESTS = write_bw_postlist write_lat write_bw read_lat read_bw atomic_lat atomic_bw
 #TESTS = write_lat write_bw
-TESTS = write_bw_mt_nqp
+TESTS = write_bw_mt_nqp write_bw_mt_nctx_iter write_bw_mt_nqp_ncq_qpiter write_bw_mt_nqp_qpiter
 UTILS = clock_test
 
 
