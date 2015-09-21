@@ -420,7 +420,8 @@ static int ctx_set_out_reads(struct ibv_context *context,int num_user_reads) {
 /****************************************************************************** 
  *
  ******************************************************************************/
-int parser(struct perftest_parameters *user_param,char *argv[], int argc) {
+int parser_internal(struct perftest_parameters *user_param,char *argv[], int argc,
+                    char *servername, int internal_server_flag) {
 
 	int c;
 
@@ -591,18 +592,27 @@ int parser(struct perftest_parameters *user_param,char *argv[], int argc) {
         }
     }
 
-    if (optind == argc - 1) {
-		GET_STRING(user_param->servername,strdupa(argv[optind])); 
-
-	} else if (optind < argc) {
-            fprintf(stderr," Invalid Command line. Please check command rerun \n"); 
-            return 1;
-    }
+	if(internal_server_flag) {
+	    if(servername)
+	        GET_STRING(user_param->servername, servername);
+	}else{
+	    if (optind == argc - 1) {
+	        GET_STRING(user_param->servername,strdupa(argv[optind]));
+	    } else if (optind < argc) {
+	            fprintf(stderr," Invalid Command line. Please check command rerun \n");
+	            return 1;
+	    }
+	}
 
 	user_param->machine = user_param->servername ? CLIENT : SERVER;
 	force_dependecies(user_param);
     return 0;
 }
+
+int parser(struct perftest_parameters *user_param, char *argv[], int argc) {
+    return parser_internal(user_param, argv, argc, NULL, 0);
+}
+
 
 /****************************************************************************** 
  *
@@ -610,40 +620,40 @@ int parser(struct perftest_parameters *user_param,char *argv[], int argc) {
 int check_link_and_mtu(struct ibv_context *context,struct perftest_parameters *user_param) {
 
 
-	user_param->link_type = set_link_layer(context,user_param->ib_port);
-	
-	if (user_param->link_type == LINK_FAILURE) {
-		fprintf(stderr, " Couldn't set the link layer\n");
-		return FAILURE;
-	}
+    user_param->link_type = set_link_layer(context,user_param->ib_port);
 
-	if (user_param->link_type == IBV_LINK_LAYER_ETHERNET &&  user_param->gid_index == -1) {
-			user_param->gid_index = 0;
-	}
+    if (user_param->link_type == LINK_FAILURE) {
+        fprintf(stderr, " Couldn't set the link layer\n");
+        return FAILURE;
+    }
 
-	user_param->curr_mtu = set_mtu(context,user_param->ib_port,user_param->mtu);
+    if (user_param->link_type == IBV_LINK_LAYER_ETHERNET &&  user_param->gid_index == -1) {
+            user_param->gid_index = 0;
+    }
 
-	if (is_dev_hermon(context) != HERMON && user_param->inline_size != 0)
-		user_param->inline_size = 0;
+    user_param->curr_mtu = set_mtu(context,user_param->ib_port,user_param->mtu);
 
-	if (user_param->verb == READ || user_param->verb == ATOMIC)
-		user_param->out_reads = ctx_set_out_reads(context,user_param->out_reads);
+    if (is_dev_hermon(context) != HERMON && user_param->inline_size != 0)
+        user_param->inline_size = 0;
+
+    if (user_param->verb == READ || user_param->verb == ATOMIC)
+        user_param->out_reads = ctx_set_out_reads(context,user_param->out_reads);
 
 
-	if (user_param->connection_type == UD && 
-		user_param->size > MTU_SIZE(user_param->curr_mtu)) {
+    if (user_param->connection_type == UD &&
+        user_param->size > MTU_SIZE(user_param->curr_mtu)) {
 
-		if (user_param->all == OFF) {
-			fprintf(stderr," Max msg size in UD is MTU %d\n",MTU_SIZE(user_param->curr_mtu));
-			fprintf(stderr," Changing to this MTU\n");
-		}
-		user_param->size = MTU_SIZE(user_param->curr_mtu);
-	}
+        if (user_param->all == OFF) {
+            fprintf(stderr," Max msg size in UD is MTU %d\n",MTU_SIZE(user_param->curr_mtu));
+            fprintf(stderr," Changing to this MTU\n");
+        }
+        user_param->size = MTU_SIZE(user_param->curr_mtu);
+    }
 
-	return SUCCESS;
+    return SUCCESS;
 }
 
-/****************************************************************************** 
+/******************************************************************************
  *
  ******************************************************************************/
 void ctx_print_test_info(struct perftest_parameters *user_param) {
