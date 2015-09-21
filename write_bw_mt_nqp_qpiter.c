@@ -198,8 +198,11 @@ static void print_report(struct perftest_parameters *user_param) {
 
 	tsize = user_param->duplex ? 2 : 1;
 	tsize = tsize * user_param->size;
-	printf("%d %lu %d %.2f\n", nthreads, (unsigned long)user_param->size, iters,
-	       tsize*(iters - user_param->tx_depth)*user_param->num_of_qps*cycles_to_units/(tcompleted[(iters*user_param->num_of_qps) - 1] - tposted[0]) / 0x100000);
+	double bw = tsize*(iters - user_param->tx_depth)*user_param->num_of_qps*cycles_to_units/
+	        (tcompleted[(iters*user_param->num_of_qps) - 1] - tposted[0]) / 0x100000;
+	double mr = bw * 0x100000 / tsize / 1000; /*kmsg/s*/
+    printf("%d %lu %d %.2f %.2f\n", nthreads, (unsigned long)user_param->size, iters,
+           bw, mr);
 }
 
 /****************************************************************************** 

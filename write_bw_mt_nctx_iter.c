@@ -181,8 +181,9 @@ static void print_report(struct perftest_parameters *user_param) {
     int time = tcompleted[1] - tposted[1];
     int niter = g_totscnt - user_param->tx_depth * user_param->num_of_qps * NCTX;
     double bw = tsize * niter * cycles_to_units / time / 0x100000;
+    double mr = bw * 0x100000 / tsize / 1000; /*kmsg/s*/
 
-    printf("%d %lu %d %.2f\n", nthreads, (unsigned long) user_param->size, iters, bw);
+    printf("%d %lu %d %.2f %.2f\n", nthreads, (unsigned long) user_param->size, iters, bw, mr);
 }
 
 /****************************************************************************** 
